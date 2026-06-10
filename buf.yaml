@@ -2,7 +2,7 @@ version: v2
 name: buf.build/xpendsense/spendsense
 lint:
   use:
-    - DEFAULT
+    - STANDARD
 breaking:
   use:
     - FILE

@@ -7,34 +7,34 @@ option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendse
 // Fixed-point money representation to avoid float precision issues.
 // amount = units + nanos / 1_000_000_000
 message Money {
-  int64  units    = 1;
-  int32  nanos    = 2;
+  int64 units = 1;
+  int32 nanos = 2;
   string currency = 3; // e.g. "USD"
 }
 
 enum RecurringType {
   RECURRING_TYPE_UNSPECIFIED = 0;
-  RECURRING_TYPE_ONE_OFF     = 1;
-  RECURRING_TYPE_WEEKLY      = 2;
-  RECURRING_TYPE_BI_WEEKLY   = 3;
-  RECURRING_TYPE_MONTHLY     = 4;
-  RECURRING_TYPE_YEARLY      = 5;
+  RECURRING_TYPE_ONE_OFF = 1;
+  RECURRING_TYPE_WEEKLY = 2;
+  RECURRING_TYPE_BI_WEEKLY = 3;
+  RECURRING_TYPE_MONTHLY = 4;
+  RECURRING_TYPE_YEARLY = 5;
 }
 
 enum ExpenseType {
   EXPENSE_TYPE_UNSPECIFIED = 0;
-  EXPENSE_TYPE_FIXED       = 1;
-  EXPENSE_TYPE_VARIABLE    = 2;
+  EXPENSE_TYPE_FIXED = 1;
+  EXPENSE_TYPE_VARIABLE = 2;
 }
 
 enum PaymentType {
-  PAYMENT_TYPE_UNSPECIFIED      = 0;
-  PAYMENT_TYPE_CASH             = 1;
-  PAYMENT_TYPE_CREDIT           = 2;
-  PAYMENT_TYPE_DEBIT            = 3;
-  PAYMENT_TYPE_DIGITAL_WALLET   = 4;
-  PAYMENT_TYPE_BANK_TRANSFER    = 5;
-  PAYMENT_TYPE_CRYPTO           = 6;
-  PAYMENT_TYPE_INVESTMENT       = 7;
-  PAYMENT_TYPE_OTHER            = 99;
+  PAYMENT_TYPE_UNSPECIFIED = 0;
+  PAYMENT_TYPE_CASH = 1;
+  PAYMENT_TYPE_CREDIT = 2;
+  PAYMENT_TYPE_DEBIT = 3;
+  PAYMENT_TYPE_DIGITAL_WALLET = 4;
+  PAYMENT_TYPE_BANK_TRANSFER = 5;
+  PAYMENT_TYPE_CRYPTO = 6;
+  PAYMENT_TYPE_INVESTMENT = 7;
+  PAYMENT_TYPE_OTHER = 99;
 }

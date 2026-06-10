@@ -1,12 +1,12 @@
 name: CI
 
 on:
-  pull_request:
-    branches: [main, develop]
+  push:
+    branches: [main, develop, 'feature/**']
 
 jobs:
   proto:
-    name: Lint and breaking change check
+    name: Lint and format check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,6 +16,5 @@ jobs:
           token: ${{ secrets.BUF_TOKEN }}
           lint: true
           format: true
-          breaking: true
-          breaking_against: https://github.com/${{ github.repository }}.git#branch=${{ github.base_ref }}
+          breaking: false
           push: false

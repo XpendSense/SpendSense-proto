@@ -2,224 +2,283 @@ syntax = "proto3";
 
 package spendsense.v1;
 
-option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
-
 import "google/protobuf/timestamp.proto";
 import "spendsense/v1/common.proto";
 
+option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
+
 service BudgetService {
   // Budget CRUD
-  rpc ListBudgets(ListBudgetsRequest)   returns (ListBudgetsResponse);
-  rpc GetBudget(GetBudgetRequest)       returns (GetBudgetResponse);
+  rpc ListBudgets(ListBudgetsRequest) returns (ListBudgetsResponse);
+  rpc GetBudget(GetBudgetRequest) returns (GetBudgetResponse);
   rpc CreateBudget(CreateBudgetRequest) returns (CreateBudgetResponse);
   rpc UpdateBudget(UpdateBudgetRequest) returns (UpdateBudgetResponse);
   rpc DeleteBudget(DeleteBudgetRequest) returns (DeleteBudgetResponse);
 
   // People on a budget
-  rpc AddBudgetPeople(AddBudgetPeopleRequest)       returns (AddBudgetPeopleResponse);
-  rpc ListBudgetPeople(ListBudgetPeopleRequest)     returns (ListBudgetPeopleResponse);
+  rpc AddBudgetPeople(AddBudgetPeopleRequest) returns (AddBudgetPeopleResponse);
+  rpc ListBudgetPeople(ListBudgetPeopleRequest) returns (ListBudgetPeopleResponse);
   rpc RemoveBudgetPerson(RemoveBudgetPersonRequest) returns (RemoveBudgetPersonResponse);
 
   // Income entries
-  rpc AddIncomeEntry(AddIncomeEntryRequest)       returns (AddIncomeEntryResponse);
+  rpc AddIncomeEntry(AddIncomeEntryRequest) returns (AddIncomeEntryResponse);
   rpc ListIncomeEntries(ListIncomeEntriesRequest) returns (ListIncomeEntriesResponse);
   rpc UpdateIncomeEntry(UpdateIncomeEntryRequest) returns (UpdateIncomeEntryResponse);
   rpc DeleteIncomeEntry(DeleteIncomeEntryRequest) returns (DeleteIncomeEntryResponse);
 
   // Transactions (variable/fixed expenses and savings)
-  rpc ListTransactions(ListTransactionsRequest)     returns (ListTransactionsResponse);
-  rpc CreateTransaction(CreateTransactionRequest)   returns (CreateTransactionResponse);
-  rpc UpdateTransaction(UpdateTransactionRequest)   returns (UpdateTransactionResponse);
-  rpc DeleteTransaction(DeleteTransactionRequest)   returns (DeleteTransactionResponse);
+  rpc ListTransactions(ListTransactionsRequest) returns (ListTransactionsResponse);
+  rpc CreateTransaction(CreateTransactionRequest) returns (CreateTransactionResponse);
+  rpc UpdateTransaction(UpdateTransactionRequest) returns (UpdateTransactionResponse);
+  rpc DeleteTransaction(DeleteTransactionRequest) returns (DeleteTransactionResponse);
 
   // Reference data
-  rpc ListCategories(ListCategoriesRequest)           returns (ListCategoriesResponse);
-  rpc ListPaymentMethods(ListPaymentMethodsRequest)   returns (ListPaymentMethodsResponse);
+  rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
+  rpc ListPaymentMethods(ListPaymentMethodsRequest) returns (ListPaymentMethodsResponse);
   rpc CreatePaymentMethod(CreatePaymentMethodRequest) returns (CreatePaymentMethodResponse);
 }
 
 // ─── Messages ────────────────────────────────────────────────────────────────
 
 message Budget {
-  string id      = 1;
+  string id = 1;
   string user_id = 2;
-  string name    = 3;
+  string name = 3;
   google.protobuf.Timestamp start_date = 4;
-  google.protobuf.Timestamp end_date   = 5;
-  bool   active  = 6;
+  google.protobuf.Timestamp end_date = 5;
+  bool active = 6;
 }
 
 message BudgetPerson {
-  int64  id        = 1;
+  int64 id = 1;
   string budget_id = 2;
   string user_name = 3;
-  string user_id   = 4; // empty when person is not a registered user
+  string user_id = 4; // empty when person is not a registered user
 }
 
 message IncomeEntry {
-  int64  id        = 1;
+  int64 id = 1;
   string budget_id = 2;
-  string user_id   = 3; // empty when income belongs to the budget owner directly
-  string name      = 4;
-  Money  amount    = 5;
-  bool   recurring = 6;
+  string user_id = 3; // empty when income belongs to the budget owner directly
+  string name = 4;
+  Money amount = 5;
+  bool recurring = 6;
 }
 
 message Transaction {
-  string id                        = 1;
-  string name                      = 2;
-  Money  amount                    = 3;
-  Money  planned_amount            = 4;
-  google.protobuf.Timestamp date         = 5;
+  string id = 1;
+  string name = 2;
+  Money amount = 3;
+  Money planned_amount = 4;
+  google.protobuf.Timestamp date = 5;
   google.protobuf.Timestamp renewal_date = 6;
-  bool   recurring                 = 7;
-  string budget_id                 = 8;
-  int32  category_id               = 9;
-  string payment_method_id         = 10;
-  int32  transaction_frequency_id  = 11;
-  int32  transaction_type_id       = 12;
+  bool recurring = 7;
+  string budget_id = 8;
+  int32 category_id = 9;
+  string payment_method_id = 10;
+  int32 transaction_frequency_id = 11;
+  int32 transaction_type_id = 12;
 }
 
 message Category {
-  int32  id      = 1;
-  string name    = 2;
-  int32  type_id = 3;
+  int32 id = 1;
+  string name = 2;
+  int32 type_id = 3;
 }
 
 message PaymentMethod {
-  string      id   = 1;
-  string      name = 2;
+  string id = 1;
+  string name = 2;
   PaymentType type = 3;
 }
 
 // ─── Budget CRUD ─────────────────────────────────────────────────────────────
 
-message ListBudgetsRequest  {}
-message ListBudgetsResponse { repeated Budget budgets = 1; }
+message ListBudgetsRequest {}
 
-message GetBudgetRequest  { string id = 1; }
-message GetBudgetResponse { Budget budget = 1; }
+message ListBudgetsResponse {
+  repeated Budget budgets = 1;
+}
 
-message CreateBudgetRequest  { string name = 1; }
-message CreateBudgetResponse { Budget budget = 1; }
+message GetBudgetRequest {
+  string id = 1;
+}
+
+message GetBudgetResponse {
+  Budget budget = 1;
+}
+
+message CreateBudgetRequest {
+  string name = 1;
+}
+
+message CreateBudgetResponse {
+  Budget budget = 1;
+}
 
 message UpdateBudgetRequest {
-  string id     = 1;
-  string name   = 2;
-  bool   active = 3;
+  string id = 1;
+  string name = 2;
+  bool active = 3;
 }
-message UpdateBudgetResponse { Budget budget = 1; }
 
-message DeleteBudgetRequest  { string id = 1; }
+message UpdateBudgetResponse {
+  Budget budget = 1;
+}
+
+message DeleteBudgetRequest {
+  string id = 1;
+}
+
 message DeleteBudgetResponse {}
 
 // ─── People ──────────────────────────────────────────────────────────────────
 
 message NewBudgetPerson {
   string user_name = 1;
-  string user_id   = 2; // optional
+  string user_id = 2; // optional
 }
 
 message AddBudgetPeopleRequest {
-  string                  budget_id = 1;
-  repeated NewBudgetPerson people   = 2;
+  string budget_id = 1;
+  repeated NewBudgetPerson people = 2;
 }
-message AddBudgetPeopleResponse { repeated BudgetPerson people = 1; }
 
-message ListBudgetPeopleRequest  { string budget_id = 1; }
-message ListBudgetPeopleResponse { repeated BudgetPerson people = 1; }
+message AddBudgetPeopleResponse {
+  repeated BudgetPerson people = 1;
+}
+
+message ListBudgetPeopleRequest {
+  string budget_id = 1;
+}
+
+message ListBudgetPeopleResponse {
+  repeated BudgetPerson people = 1;
+}
 
 message RemoveBudgetPersonRequest {
   string budget_id = 1;
-  int64  person_id = 2;
+  int64 person_id = 2;
 }
+
 message RemoveBudgetPersonResponse {}
 
 // ─── Income ──────────────────────────────────────────────────────────────────
 
 message AddIncomeEntryRequest {
   string budget_id = 1;
-  string name      = 2;
-  Money  amount    = 3;
-  bool   recurring = 4;
-  string user_id   = 5; // optional
+  string name = 2;
+  Money amount = 3;
+  bool recurring = 4;
+  string user_id = 5; // optional
 }
-message AddIncomeEntryResponse { IncomeEntry entry = 1; }
 
-message ListIncomeEntriesRequest  { string budget_id = 1; }
-message ListIncomeEntriesResponse { repeated IncomeEntry entries = 1; }
+message AddIncomeEntryResponse {
+  IncomeEntry entry = 1;
+}
+
+message ListIncomeEntriesRequest {
+  string budget_id = 1;
+}
+
+message ListIncomeEntriesResponse {
+  repeated IncomeEntry entries = 1;
+}
 
 message UpdateIncomeEntryRequest {
-  int64  id        = 1;
+  int64 id = 1;
   string budget_id = 2;
-  string name      = 3;
-  Money  amount    = 4;
-  bool   recurring = 5;
+  string name = 3;
+  Money amount = 4;
+  bool recurring = 5;
 }
-message UpdateIncomeEntryResponse { IncomeEntry entry = 1; }
+
+message UpdateIncomeEntryResponse {
+  IncomeEntry entry = 1;
+}
 
 message DeleteIncomeEntryRequest {
-  int64  id        = 1;
+  int64 id = 1;
   string budget_id = 2;
 }
+
 message DeleteIncomeEntryResponse {}
 
 // ─── Transactions ─────────────────────────────────────────────────────────────
 
 message ListTransactionsRequest {
-  string budget_id           = 1;
-  int32  category_id         = 2; // 0 = no filter
-  int32  transaction_type_id = 3; // 0 = no filter
+  string budget_id = 1;
+  int32 category_id = 2; // 0 = no filter
+  int32 transaction_type_id = 3; // 0 = no filter
 }
-message ListTransactionsResponse { repeated Transaction transactions = 1; }
+
+message ListTransactionsResponse {
+  repeated Transaction transactions = 1;
+}
 
 message CreateTransactionRequest {
-  string                    name                     = 1;
-  Money                     amount                   = 2;
-  Money                     planned_amount           = 3;
-  google.protobuf.Timestamp date                     = 4;
-  google.protobuf.Timestamp renewal_date             = 5;
-  bool                      recurring                = 6;
-  string                    budget_id                = 7;
-  int32                     category_id              = 8;
-  string                    payment_method_id        = 9;
-  int32                     transaction_frequency_id = 10;
-  int32                     transaction_type_id      = 11;
+  string name = 1;
+  Money amount = 2;
+  Money planned_amount = 3;
+  google.protobuf.Timestamp date = 4;
+  google.protobuf.Timestamp renewal_date = 5;
+  bool recurring = 6;
+  string budget_id = 7;
+  int32 category_id = 8;
+  string payment_method_id = 9;
+  int32 transaction_frequency_id = 10;
+  int32 transaction_type_id = 11;
 }
-message CreateTransactionResponse { Transaction transaction = 1; }
+
+message CreateTransactionResponse {
+  Transaction transaction = 1;
+}
 
 message UpdateTransactionRequest {
-  string                    id                       = 1;
-  string                    name                     = 2;
-  Money                     amount                   = 3;
-  Money                     planned_amount           = 4;
-  google.protobuf.Timestamp date                     = 5;
-  bool                      recurring                = 6;
-  int32                     category_id              = 7;
-  string                    payment_method_id        = 8;
-  int32                     transaction_frequency_id = 9;
-  int32                     transaction_type_id      = 10;
+  string id = 1;
+  string name = 2;
+  Money amount = 3;
+  Money planned_amount = 4;
+  google.protobuf.Timestamp date = 5;
+  bool recurring = 6;
+  int32 category_id = 7;
+  string payment_method_id = 8;
+  int32 transaction_frequency_id = 9;
+  int32 transaction_type_id = 10;
 }
-message UpdateTransactionResponse { Transaction transaction = 1; }
+
+message UpdateTransactionResponse {
+  Transaction transaction = 1;
+}
 
 message DeleteTransactionRequest {
-  string id        = 1;
+  string id = 1;
   string budget_id = 2;
 }
+
 message DeleteTransactionResponse {}
 
 // ─── Categories ──────────────────────────────────────────────────────────────
 
-message ListCategoriesRequest  {}
-message ListCategoriesResponse { repeated Category categories = 1; }
+message ListCategoriesRequest {}
+
+message ListCategoriesResponse {
+  repeated Category categories = 1;
+}
 
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
-message ListPaymentMethodsRequest  {}
-message ListPaymentMethodsResponse { repeated PaymentMethod methods = 1; }
+message ListPaymentMethodsRequest {}
+
+message ListPaymentMethodsResponse {
+  repeated PaymentMethod methods = 1;
+}
 
 message CreatePaymentMethodRequest {
-  string      name = 1;
+  string name = 1;
   PaymentType type = 2;
 }
-message CreatePaymentMethodResponse { PaymentMethod method = 1; }
+
+message CreatePaymentMethodResponse {
+  PaymentMethod method = 1;
+}

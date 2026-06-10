@@ -5,25 +5,26 @@ package spendsense.v1;
 option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
 
 service AuthService {
-  rpc Login(LoginRequest)                           returns (LoginResponse);
-  rpc Logout(LogoutRequest)                         returns (LogoutResponse);
-  rpc RefreshToken(RefreshTokenRequest)             returns (RefreshTokenResponse);
-  rpc GetGoogleAuthURL(GetGoogleAuthURLRequest)     returns (GetGoogleAuthURLResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc GetGoogleAuthURL(GetGoogleAuthURLRequest) returns (GetGoogleAuthURLResponse);
   rpc ExchangeGoogleCode(ExchangeGoogleCodeRequest) returns (ExchangeGoogleCodeResponse);
 }
 
 message LoginRequest {
-  string email    = 1;
+  string email = 1;
   string password = 2;
 }
 
 message LoginResponse {
-  string access_token  = 1;
-  string token_type    = 2; // "bearer"
-  int64  expires_in    = 3; // seconds
+  string access_token = 1;
+  string token_type = 2; // "bearer"
+  int64 expires_in = 3; // seconds
 }
 
-message LogoutRequest  {}
+message LogoutRequest {}
+
 message LogoutResponse {}
 
 message RefreshTokenRequest {
@@ -32,11 +33,11 @@ message RefreshTokenRequest {
 
 message RefreshTokenResponse {
   string access_token = 1;
-  int64  expires_in   = 2;
+  int64 expires_in = 2;
 }
 
 message GetGoogleAuthURLRequest {
-  string state        = 1; // CSRF token from client
+  string state = 1; // CSRF token from client
   string redirect_uri = 2;
 }
 
@@ -45,13 +46,13 @@ message GetGoogleAuthURLResponse {
 }
 
 message ExchangeGoogleCodeRequest {
-  string code         = 1;
-  string state        = 2;
+  string code = 1;
+  string state = 2;
   string redirect_uri = 3;
 }
 
 message ExchangeGoogleCodeResponse {
   string access_token = 1;
-  int64  expires_in   = 2;
-  bool   is_new_user  = 3;
+  int64 expires_in = 2;
+  bool is_new_user = 3;
 }

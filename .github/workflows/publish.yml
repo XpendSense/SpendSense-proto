@@ -14,7 +14,8 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           token: ${{ secrets.BUF_TOKEN }}
-          push: true
           lint: false
           format: false
-          breaking: false
+          breaking: true
+          breaking_against: buf.build/xpendsense/spendsense
+          push: true

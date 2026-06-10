@@ -2,41 +2,49 @@ syntax = "proto3";
 
 package spendsense.v1;
 
-option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
-
 import "google/protobuf/timestamp.proto";
 
+option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
+
 service UserService {
-  rpc GetMe(GetMeRequest)                   returns (GetMeResponse);
-  rpc UpdateMe(UpdateMeRequest)             returns (UpdateMeResponse);
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
+  rpc UpdateMe(UpdateMeRequest) returns (UpdateMeResponse);
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
-  rpc DeleteMe(DeleteMeRequest)             returns (DeleteMeResponse);
+  rpc DeleteMe(DeleteMeRequest) returns (DeleteMeResponse);
 }
 
 message User {
-  string id          = 1;
-  string email       = 2;
-  string first_name  = 3;
-  string last_name   = 4;
-  bool   is_active   = 5;
-  bool   is_verified = 6;
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  bool is_active = 5;
+  bool is_verified = 6;
   google.protobuf.Timestamp created_at = 7;
 }
 
-message GetMeRequest  {}
-message GetMeResponse { User user = 1; }
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+}
 
 message UpdateMeRequest {
   string first_name = 1;
-  string last_name  = 2;
+  string last_name = 2;
 }
-message UpdateMeResponse { User user = 1; }
+
+message UpdateMeResponse {
+  User user = 1;
+}
 
 message ChangePasswordRequest {
   string current_password = 1;
-  string new_password     = 2;
+  string new_password = 2;
 }
+
 message ChangePasswordResponse {}
 
-message DeleteMeRequest  {}
+message DeleteMeRequest {}
+
 message DeleteMeResponse {}
