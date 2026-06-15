@@ -5,11 +5,25 @@ package spendsense.v1;
 option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
 
 service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
   rpc GetGoogleAuthURL(GetGoogleAuthURLRequest) returns (GetGoogleAuthURLResponse);
   rpc ExchangeGoogleCode(ExchangeGoogleCodeRequest) returns (ExchangeGoogleCodeResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+message RegisterResponse {
+  string access_token = 1;
+  string token_type = 2;
+  int64 expires_in = 3;
 }
 
 message LoginRequest {
