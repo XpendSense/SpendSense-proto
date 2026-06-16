@@ -36,6 +36,7 @@ service BudgetService {
   rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
   rpc ListPaymentMethods(ListPaymentMethodsRequest) returns (ListPaymentMethodsResponse);
   rpc CreatePaymentMethod(CreatePaymentMethodRequest) returns (CreatePaymentMethodResponse);
+  rpc UpdatePaymentMethod(UpdatePaymentMethodRequest) returns (UpdatePaymentMethodResponse);
 }
 
 // ─── Messages ────────────────────────────────────────────────────────────────
@@ -280,5 +281,14 @@ message CreatePaymentMethodRequest {
 }
 
 message CreatePaymentMethodResponse {
+  PaymentMethod method = 1;
+}
+
+message UpdatePaymentMethodRequest {
+  string id = 1;
+  string name = 2;
+}
+
+message UpdatePaymentMethodResponse {
   PaymentMethod method = 1;
 }
