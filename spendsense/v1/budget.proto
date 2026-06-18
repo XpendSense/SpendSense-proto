@@ -34,6 +34,9 @@ service BudgetService {
 
   // Reference data
   rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+  rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse);
+  rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse);
   rpc ListPaymentMethods(ListPaymentMethodsRequest) returns (ListPaymentMethodsResponse);
   rpc CreatePaymentMethod(CreatePaymentMethodRequest) returns (CreatePaymentMethodResponse);
   rpc UpdatePaymentMethod(UpdatePaymentMethodRequest) returns (UpdatePaymentMethodResponse);
@@ -85,6 +88,7 @@ message Category {
   int32 id = 1;
   string name = 2;
   int32 type_id = 3;
+  bool is_system = 4;
 }
 
 message PaymentMethod {
@@ -266,6 +270,30 @@ message ListCategoriesRequest {}
 message ListCategoriesResponse {
   repeated Category categories = 1;
 }
+
+message CreateCategoryRequest {
+  string name = 1;
+}
+
+message CreateCategoryResponse {
+  Category category = 1;
+}
+
+message UpdateCategoryRequest {
+  int32 id = 1;
+  string name = 2;
+}
+
+message UpdateCategoryResponse {
+  Category category = 1;
+}
+
+message DeleteCategoryRequest {
+  int32 id = 1;
+  int32 replacement_id = 2;
+}
+
+message DeleteCategoryResponse {}
 
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
