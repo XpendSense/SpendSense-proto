@@ -292,6 +292,7 @@ message UpdateCategoryResponse {
 message DeleteCategoryRequest {
   int32 id = 1;
   int32 replacement_id = 2;
+  string budget_id = 3;
 }
 
 message DeleteCategoryResponse {}
@@ -325,6 +326,7 @@ message UpdatePaymentMethodResponse {
 message DeletePaymentMethodRequest {
   string id = 1;
   string replacement_id = 2;
+  string budget_id = 3;
 }
 
 message DeletePaymentMethodResponse {}
