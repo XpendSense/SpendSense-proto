@@ -40,6 +40,7 @@ service BudgetService {
   rpc ListPaymentMethods(ListPaymentMethodsRequest) returns (ListPaymentMethodsResponse);
   rpc CreatePaymentMethod(CreatePaymentMethodRequest) returns (CreatePaymentMethodResponse);
   rpc UpdatePaymentMethod(UpdatePaymentMethodRequest) returns (UpdatePaymentMethodResponse);
+  rpc DeletePaymentMethod(DeletePaymentMethodRequest) returns (DeletePaymentMethodResponse);
 }
 
 // ─── Messages ────────────────────────────────────────────────────────────────
@@ -320,3 +321,10 @@ message UpdatePaymentMethodRequest {
 message UpdatePaymentMethodResponse {
   PaymentMethod method = 1;
 }
+
+message DeletePaymentMethodRequest {
+  string id = 1;
+  string replacement_id = 2;
+}
+
+message DeletePaymentMethodResponse {}
