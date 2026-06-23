@@ -97,6 +97,7 @@ message PaymentMethod {
   string id = 1;
   string name = 2;
   PaymentType type = 3;
+  int64 budget_person_id = 4; // 0 = unattributed
 }
 
 // ─── Budget CRUD ─────────────────────────────────────────────────────────────
@@ -302,7 +303,9 @@ message DeleteCategoryResponse {}
 
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
-message ListPaymentMethodsRequest {}
+message ListPaymentMethodsRequest {
+  string budget_id = 1;
+}
 
 message ListPaymentMethodsResponse {
   repeated PaymentMethod methods = 1;
@@ -311,6 +314,7 @@ message ListPaymentMethodsResponse {
 message CreatePaymentMethodRequest {
   string name = 1;
   PaymentType type = 2;
+  int64 budget_person_id = 3; // 0 = unattributed
 }
 
 message CreatePaymentMethodResponse {
