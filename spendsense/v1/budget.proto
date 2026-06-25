@@ -8,78 +8,114 @@ import "spendsense/v1/common.proto";
 option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
 
 service BudgetService {
-  // Budget CRUD
-  rpc ListBudgets(ListBudgetsRequest) returns (ListBudgetsResponse);
-  rpc GetBudget(GetBudgetRequest) returns (GetBudgetResponse);
-  rpc CreateBudget(CreateBudgetRequest) returns (CreateBudgetResponse);
-  rpc UpdateBudget(UpdateBudgetRequest) returns (UpdateBudgetResponse);
-  rpc DeleteBudget(DeleteBudgetRequest) returns (DeleteBudgetResponse);
+  // BudgetProfile CRUD — the stable, user-configured core of a budget
+  rpc CreateBudgetProfile(CreateBudgetProfileRequest) returns (CreateBudgetProfileResponse);
+  rpc ListBudgetProfiles(ListBudgetProfilesRequest) returns (ListBudgetProfilesResponse);
+  rpc GetBudgetProfile(GetBudgetProfileRequest) returns (GetBudgetProfileResponse);
+  rpc UpdateBudgetProfile(UpdateBudgetProfileRequest) returns (UpdateBudgetProfileResponse);
+  rpc DeleteBudgetProfile(DeleteBudgetProfileRequest) returns (DeleteBudgetProfileResponse);
 
-  // People on a budget
+  // BudgetPeriod — one per cycle window; first created on profile setup, rest by the cycling job
+  rpc CreateBudgetPeriod(CreateBudgetPeriodRequest) returns (CreateBudgetPeriodResponse);
+  rpc ListBudgetPeriods(ListBudgetPeriodsRequest) returns (ListBudgetPeriodsResponse);
+  rpc GetBudgetPeriod(GetBudgetPeriodRequest) returns (GetBudgetPeriodResponse);
+
+  // People — profile-scoped; shared across all periods
   rpc AddBudgetPeople(AddBudgetPeopleRequest) returns (AddBudgetPeopleResponse);
   rpc ListBudgetPeople(ListBudgetPeopleRequest) returns (ListBudgetPeopleResponse);
   rpc RemoveBudgetPerson(RemoveBudgetPersonRequest) returns (RemoveBudgetPersonResponse);
 
-  // Income entries
-  rpc AddIncomeEntry(AddIncomeEntryRequest) returns (AddIncomeEntryResponse);
+  // Income sources — profile-level templates
+  rpc AddIncomeSource(AddIncomeSourceRequest) returns (AddIncomeSourceResponse);
+  rpc ListIncomeSources(ListIncomeSourcesRequest) returns (ListIncomeSourcesResponse);
+  rpc UpdateIncomeSource(UpdateIncomeSourceRequest) returns (UpdateIncomeSourceResponse);
+  rpc DeleteIncomeSource(DeleteIncomeSourceRequest) returns (DeleteIncomeSourceResponse);
+
+  // Income entries — period-level actual amounts (pre-filled from sources, user-editable)
   rpc ListIncomeEntries(ListIncomeEntriesRequest) returns (ListIncomeEntriesResponse);
   rpc UpdateIncomeEntry(UpdateIncomeEntryRequest) returns (UpdateIncomeEntryResponse);
-  rpc DeleteIncomeEntry(DeleteIncomeEntryRequest) returns (DeleteIncomeEntryResponse);
 
-  // Transactions (variable/fixed expenses and savings)
+  // Transactions — period-scoped
   rpc ListTransactions(ListTransactionsRequest) returns (ListTransactionsResponse);
   rpc CreateTransaction(CreateTransactionRequest) returns (CreateTransactionResponse);
   rpc UpdateTransaction(UpdateTransactionRequest) returns (UpdateTransactionResponse);
   rpc DeleteTransaction(DeleteTransactionRequest) returns (DeleteTransactionResponse);
 
-  // Reference data
+  // Categories — user-scoped, unchanged
   rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
   rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
   rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse);
   rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse);
+
+  // Payment methods — profile-scoped via BudgetPerson
   rpc ListPaymentMethods(ListPaymentMethodsRequest) returns (ListPaymentMethodsResponse);
   rpc CreatePaymentMethod(CreatePaymentMethodRequest) returns (CreatePaymentMethodResponse);
   rpc UpdatePaymentMethod(UpdatePaymentMethodRequest) returns (UpdatePaymentMethodResponse);
   rpc DeletePaymentMethod(DeletePaymentMethodRequest) returns (DeletePaymentMethodResponse);
 }
 
-// ─── Messages ────────────────────────────────────────────────────────────────
+// ─── Core entities ───────────────────────────────────────────────────────────
 
-message Budget {
+// The stable, user-configured budget. People, payment methods, and income
+// sources all belong here and carry forward across every period.
+message BudgetProfile {
   string id = 1;
   string user_id = 2;
   string name = 3;
-  google.protobuf.Timestamp start_date = 4;
-  google.protobuf.Timestamp end_date = 5;
-  bool active = 6;
+  BudgetCycle cycle = 4;
 }
 
+// One cycle window of a BudgetProfile. Auto-created by the cycling job;
+// the first is created immediately when the profile is set up.
+message BudgetPeriod {
+  string id = 1;
+  string budget_profile_id = 2;
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
+  bool is_archived = 5;
+}
+
+// A person tracked on the budget profile. Not a registered user necessarily.
 message BudgetPerson {
   int64 id = 1;
-  string budget_id = 2;
+  string budget_profile_id = 2;
   string user_name = 3;
   string user_id = 4; // empty when person is not a registered user
 }
 
-message IncomeEntry {
+// Template for an income stream. Carries forward every period.
+// Hourly/freelance sources have default_amount = 0 — user fills in each period.
+message IncomeSource {
   int64 id = 1;
-  string budget_id = 2;
-  string user_id = 3 [deprecated = true];
-  string name = 4;
-  Money amount = 5;
+  string budget_profile_id = 2;
+  string name = 3;
+  IncomeType income_type = 4;
+  Money default_amount = 5;
   bool recurring = 6;
   int64 budget_person_id = 7; // 0 = unattributed
 }
 
+// Actual income amount for one period. Pre-filled from IncomeSource.default_amount;
+// user edits the amount each period (especially for hourly sources).
+message IncomeEntry {
+  int64 id = 1;
+  string budget_period_id = 2;
+  int64 income_source_id = 3; // 0 = standalone entry not linked to a source
+  string name = 4;            // denormalized from source for display
+  Money amount = 5;
+  int64 budget_person_id = 6; // 0 = unattributed, denormalized from source
+}
+
+// A spend, saving, or fixed expense within a period.
 message Transaction {
   string id = 1;
   string name = 2;
   Money amount = 3;
   Money planned_amount = 4;
   google.protobuf.Timestamp date = 5;
-  google.protobuf.Timestamp renewal_date = 6;
+  google.protobuf.Timestamp renewal_date = 6; // when a recurring fixed tx expires
   bool recurring = 7;
-  string budget_id = 8;
+  string budget_period_id = 8;
   int32 category_id = 9;
   string payment_method_id = 10;
   int32 transaction_frequency_id = 11;
@@ -100,45 +136,74 @@ message PaymentMethod {
   int64 budget_person_id = 4; // 0 = unattributed
 }
 
-// ─── Budget CRUD ─────────────────────────────────────────────────────────────
+// ─── BudgetProfile CRUD ──────────────────────────────────────────────────────
 
-message ListBudgetsRequest {}
-
-message ListBudgetsResponse {
-  repeated Budget budgets = 1;
+message CreateBudgetProfileRequest {
+  string name = 1;
+  BudgetCycle cycle = 2;
 }
 
-message GetBudgetRequest {
+message CreateBudgetProfileResponse {
+  BudgetProfile profile = 1;
+}
+
+message ListBudgetProfilesRequest {}
+
+message ListBudgetProfilesResponse {
+  repeated BudgetProfile profiles = 1;
+}
+
+message GetBudgetProfileRequest {
   string id = 1;
 }
 
-message GetBudgetResponse {
-  Budget budget = 1;
+message GetBudgetProfileResponse {
+  BudgetProfile profile = 1;
 }
 
-message CreateBudgetRequest {
-  string name = 1;
-}
-
-message CreateBudgetResponse {
-  Budget budget = 1;
-}
-
-message UpdateBudgetRequest {
+message UpdateBudgetProfileRequest {
   string id = 1;
   string name = 2;
-  bool active = 3;
+  BudgetCycle cycle = 3;
 }
 
-message UpdateBudgetResponse {
-  Budget budget = 1;
+message UpdateBudgetProfileResponse {
+  BudgetProfile profile = 1;
 }
 
-message DeleteBudgetRequest {
+message DeleteBudgetProfileRequest {
   string id = 1;
 }
 
-message DeleteBudgetResponse {}
+message DeleteBudgetProfileResponse {}
+
+// ─── BudgetPeriod ────────────────────────────────────────────────────────────
+
+// Creates the next period for a profile. Dates are computed from the profile's
+// cycle and the previous period's end date (or today for the first period).
+message CreateBudgetPeriodRequest {
+  string budget_profile_id = 1;
+}
+
+message CreateBudgetPeriodResponse {
+  BudgetPeriod period = 1;
+}
+
+message ListBudgetPeriodsRequest {
+  string budget_profile_id = 1;
+}
+
+message ListBudgetPeriodsResponse {
+  repeated BudgetPeriod periods = 1;
+}
+
+message GetBudgetPeriodRequest {
+  string id = 1;
+}
+
+message GetBudgetPeriodResponse {
+  BudgetPeriod period = 1;
+}
 
 // ─── People ──────────────────────────────────────────────────────────────────
 
@@ -148,7 +213,7 @@ message NewBudgetPerson {
 }
 
 message AddBudgetPeopleRequest {
-  string budget_id = 1;
+  string budget_profile_id = 1;
   repeated NewBudgetPerson people = 2;
 }
 
@@ -157,7 +222,7 @@ message AddBudgetPeopleResponse {
 }
 
 message ListBudgetPeopleRequest {
-  string budget_id = 1;
+  string budget_profile_id = 1;
 }
 
 message ListBudgetPeopleResponse {
@@ -165,63 +230,85 @@ message ListBudgetPeopleResponse {
 }
 
 message RemoveBudgetPersonRequest {
-  string budget_id = 1;
+  string budget_profile_id = 1;
   int64 person_id = 2;
-  int64 replacement_person_id = 3;
-  string replacement_payment_method_id = 4;
+  int64 replacement_person_id = 3;         // 0 = no reassignment needed
+  string replacement_payment_method_id = 4; // empty = no reassignment needed
 }
 
 message RemoveBudgetPersonResponse {}
 
-// ─── Income ──────────────────────────────────────────────────────────────────
+// ─── Income sources ──────────────────────────────────────────────────────────
 
-message AddIncomeEntryRequest {
-  string budget_id = 1;
+message AddIncomeSourceRequest {
+  string budget_profile_id = 1;
   string name = 2;
-  Money amount = 3;
-  bool recurring = 4;
-  string user_id = 5 [deprecated = true];
+  IncomeType income_type = 3;
+  Money default_amount = 4;
+  bool recurring = 5;
   int64 budget_person_id = 6; // 0 = unattributed
 }
 
-message AddIncomeEntryResponse {
-  IncomeEntry entry = 1;
+message AddIncomeSourceResponse {
+  IncomeSource source = 1;
 }
 
+message ListIncomeSourcesRequest {
+  string budget_profile_id = 1;
+}
+
+message ListIncomeSourcesResponse {
+  repeated IncomeSource sources = 1;
+}
+
+message UpdateIncomeSourceRequest {
+  int64 id = 1;
+  string budget_profile_id = 2;
+  string name = 3;
+  IncomeType income_type = 4;
+  Money default_amount = 5;
+  bool recurring = 6;
+  int64 budget_person_id = 7;
+}
+
+message UpdateIncomeSourceResponse {
+  IncomeSource source = 1;
+}
+
+message DeleteIncomeSourceRequest {
+  int64 id = 1;
+  string budget_profile_id = 2;
+}
+
+message DeleteIncomeSourceResponse {}
+
+// ─── Income entries ──────────────────────────────────────────────────────────
+
 message ListIncomeEntriesRequest {
-  string budget_id = 1;
+  string budget_period_id = 1;
 }
 
 message ListIncomeEntriesResponse {
   repeated IncomeEntry entries = 1;
 }
 
+// Only amount is editable per period; source metadata is the source of truth.
 message UpdateIncomeEntryRequest {
   int64 id = 1;
-  string budget_id = 2;
-  string name = 3;
-  Money amount = 4;
-  bool recurring = 5;
-  int64 budget_person_id = 6; // 0 = unattributed
+  string budget_period_id = 2;
+  Money amount = 3;
 }
 
 message UpdateIncomeEntryResponse {
   IncomeEntry entry = 1;
 }
 
-message DeleteIncomeEntryRequest {
-  int64 id = 1;
-  string budget_id = 2;
-}
-
-message DeleteIncomeEntryResponse {}
-
-// ─── Transactions ─────────────────────────────────────────────────────────────
+// ─── Transactions ────────────────────────────────────────────────────────────
 
 message ListTransactionsRequest {
-  string budget_id = 1;
-  int32 category_id = 2; // 0 = no filter
-  int32 transaction_type_id = 3; // 0 = no filter
+  string budget_period_id = 1;
+  int32 category_id = 2;          // 0 = no filter
+  int32 transaction_type_id = 3;  // 0 = no filter
 }
 
 message ListTransactionsResponse {
@@ -235,7 +322,7 @@ message CreateTransactionRequest {
   google.protobuf.Timestamp date = 4;
   google.protobuf.Timestamp renewal_date = 5;
   bool recurring = 6;
-  string budget_id = 7;
+  string budget_period_id = 7;
   int32 category_id = 8;
   string payment_method_id = 9;
   int32 transaction_frequency_id = 10;
@@ -265,7 +352,7 @@ message UpdateTransactionResponse {
 
 message DeleteTransactionRequest {
   string id = 1;
-  string budget_id = 2;
+  string budget_period_id = 2;
 }
 
 message DeleteTransactionResponse {}
@@ -295,18 +382,18 @@ message UpdateCategoryResponse {
   Category category = 1;
 }
 
+// Reassigns all transactions referencing this category before deleting it.
 message DeleteCategoryRequest {
   int32 id = 1;
   int32 replacement_id = 2;
-  string budget_id = 3;
 }
 
 message DeleteCategoryResponse {}
 
-// ─── Payment Methods ──────────────────────────────────────────────────────────
+// ─── Payment methods ──────────────────────────────────────────────────────────
 
 message ListPaymentMethodsRequest {
-  string budget_id = 1;
+  string budget_profile_id = 1;
 }
 
 message ListPaymentMethodsResponse {
@@ -332,10 +419,11 @@ message UpdatePaymentMethodResponse {
   PaymentMethod method = 1;
 }
 
+// Reassigns all transactions referencing this method before deleting it.
 message DeletePaymentMethodRequest {
   string id = 1;
   string replacement_id = 2;
-  string budget_id = 3;
+  string budget_profile_id = 3;
 }
 
 message DeletePaymentMethodResponse {}

@@ -38,3 +38,23 @@ enum PaymentType {
   PAYMENT_TYPE_INVESTMENT = 7;
   PAYMENT_TYPE_OTHER = 99;
 }
+
+// How often a budget profile cycles into a new period.
+enum BudgetCycle {
+  BUDGET_CYCLE_UNSPECIFIED = 0;
+  BUDGET_CYCLE_WEEKLY = 1;
+  BUDGET_CYCLE_BI_WEEKLY = 2;
+  BUDGET_CYCLE_MONTHLY = 3;
+  BUDGET_CYCLE_YEARLY = 4;
+}
+
+// How an income source is earned — determines whether a default amount applies.
+enum IncomeType {
+  INCOME_TYPE_UNSPECIFIED = 0;
+  INCOME_TYPE_SALARY = 1;      // fixed monthly/annual — default_amount applies
+  INCOME_TYPE_HOURLY = 2;      // variable — default_amount = 0, user fills in each period
+  INCOME_TYPE_FREELANCE = 3;   // variable
+  INCOME_TYPE_CONTRACTOR = 4;  // project-based
+  INCOME_TYPE_INVESTMENT = 5;  // dividends, rental, etc.
+  INCOME_TYPE_OTHER = 99;
+}
