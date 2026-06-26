@@ -118,10 +118,10 @@ message SavingsSource {
   int64 id = 1;
   string budget_profile_id = 2;
   string name = 3;
-  Money amount = 4;               // per-occurrence amount (e.g. $200 per paycheck)
-  RecurringType frequency = 5;    // how often this saving is made
-  bool recurring = 6;             // carries forward to the next period
-  int64 budget_person_id = 7;     // 0 = unattributed
+  Money amount = 4; // per-occurrence amount (e.g. $200 per paycheck)
+  RecurringType frequency = 5; // how often this saving is made
+  bool recurring = 6; // carries forward to the next period
+  int64 budget_person_id = 7; // 0 = unattributed
 }
 
 // A spend, saving, or fixed expense within a period.

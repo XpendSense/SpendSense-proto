@@ -56,8 +56,8 @@ enum IncomeType {
   INCOME_TYPE_FREELANCE = 3; // variable
   INCOME_TYPE_CONTRACTOR = 4; // project-based
   INCOME_TYPE_INVESTMENT = 5; // dividends, rental, etc.
-  INCOME_TYPE_INTEREST = 6;  // savings account interest, bonds
-  INCOME_TYPE_ONE_TIME = 7;  // bonus, tax refund, one-off payment
-  INCOME_TYPE_GIFT = 8;      // monetary gift
+  INCOME_TYPE_INTEREST = 6; // savings account interest, bonds
+  INCOME_TYPE_ONE_TIME = 7; // bonus, tax refund, one-off payment
+  INCOME_TYPE_GIFT = 8; // monetary gift
   INCOME_TYPE_OTHER = 99;
 }
