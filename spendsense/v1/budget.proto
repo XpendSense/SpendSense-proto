@@ -120,8 +120,7 @@ message SavingsSource {
   string name = 3;
   Money amount = 4; // per-occurrence amount (e.g. $200 per paycheck)
   RecurringType frequency = 5; // how often this saving is made
-  bool recurring = 6; // carries forward to the next period
-  int64 budget_person_id = 7; // 0 = unattributed
+  int64 budget_person_id = 7;
 }
 
 // A spend, saving, or fixed expense within a period.
@@ -330,8 +329,7 @@ message AddSavingsSourceRequest {
   string name = 2;
   Money amount = 3;
   RecurringType frequency = 4;
-  bool recurring = 5;
-  int64 budget_person_id = 6; // 0 = unattributed
+  int64 budget_person_id = 6;
 }
 
 message AddSavingsSourceResponse {
@@ -352,7 +350,6 @@ message UpdateSavingsSourceRequest {
   string name = 3;
   Money amount = 4;
   RecurringType frequency = 5;
-  bool recurring = 6;
   int64 budget_person_id = 7;
 }
 
