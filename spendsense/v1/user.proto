@@ -24,8 +24,8 @@ message User {
   bool is_active = 5;
   bool is_verified = 6;
   google.protobuf.Timestamp created_at = 7;
-  string country_code = 8;       // ISO 3166-1 alpha-2, e.g. "US"
-  string state_code = 9;         // US only, e.g. "CA" — empty for non-US users
+  string country_code = 8; // ISO 3166-1 alpha-2, e.g. "US"
+  string state_code = 9; // US only, e.g. "CA" — empty for non-US users
   FilingStatus filing_status = 10;
   TaxPaymentFrequency tax_payment_frequency = 11;
 }
@@ -68,7 +68,7 @@ message CountryFeature {
 }
 
 message Country {
-  string code = 1;        // ISO 3166-1 alpha-2
+  string code = 1; // ISO 3166-1 alpha-2
   string name = 2;
   bool is_enabled = 3;
   repeated CountryFeature features = 4;
