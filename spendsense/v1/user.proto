@@ -3,6 +3,7 @@ syntax = "proto3";
 package spendsense.v1;
 
 import "google/protobuf/timestamp.proto";
+import "spendsense/v1/common.proto";
 
 option go_package = "github.com/mauro-afa91/spendsense/gen/spendsense/v1;spendsensev1";
 
@@ -11,6 +12,8 @@ service UserService {
   rpc UpdateMe(UpdateMeRequest) returns (UpdateMeResponse);
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
   rpc DeleteMe(DeleteMeRequest) returns (DeleteMeResponse);
+  // Public — no auth required (used during registration).
+  rpc ListCountries(ListCountriesRequest) returns (ListCountriesResponse);
 }
 
 message User {
@@ -21,6 +24,10 @@ message User {
   bool is_active = 5;
   bool is_verified = 6;
   google.protobuf.Timestamp created_at = 7;
+  string country_code = 8; // ISO 3166-1 alpha-2, e.g. "US"
+  string state_code = 9; // US only, e.g. "CA" — empty for non-US users
+  FilingStatus filing_status = 10;
+  TaxPaymentFrequency tax_payment_frequency = 11;
 }
 
 message GetMeRequest {}
@@ -32,6 +39,10 @@ message GetMeResponse {
 message UpdateMeRequest {
   string first_name = 1;
   string last_name = 2;
+  string country_code = 3;
+  string state_code = 4;
+  FilingStatus filing_status = 5;
+  TaxPaymentFrequency tax_payment_frequency = 6;
 }
 
 message UpdateMeResponse {
@@ -48,3 +59,23 @@ message ChangePasswordResponse {}
 message DeleteMeRequest {}
 
 message DeleteMeResponse {}
+
+// ─── Countries ───────────────────────────────────────────────────────────────
+
+message CountryFeature {
+  string name = 1;
+  bool is_enabled = 2;
+}
+
+message Country {
+  string code = 1; // ISO 3166-1 alpha-2
+  string name = 2;
+  bool is_enabled = 3;
+  repeated CountryFeature features = 4;
+}
+
+message ListCountriesRequest {}
+
+message ListCountriesResponse {
+  repeated Country countries = 1;
+}

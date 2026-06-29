@@ -18,6 +18,8 @@ message RegisterRequest {
   string password = 2;
   string first_name = 3;
   string last_name = 4;
+  string country_code = 5; // ISO 3166-1 alpha-2, e.g. "US"
+  string state_code = 6; // US only, e.g. "CA" — empty for non-US
 }
 
 message RegisterResponse {

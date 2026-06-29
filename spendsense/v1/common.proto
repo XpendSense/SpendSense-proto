@@ -61,3 +61,24 @@ enum IncomeType {
   INCOME_TYPE_GIFT = 8; // monetary gift
   INCOME_TYPE_OTHER = 99;
 }
+
+// US federal/state income tax filing status.
+enum FilingStatus {
+  FILING_STATUS_UNSPECIFIED = 0;
+  FILING_STATUS_SINGLE = 1;
+  FILING_STATUS_MARRIED_FILING_JOINTLY = 2;
+  FILING_STATUS_MARRIED_FILING_SEPARATELY = 3;
+  FILING_STATUS_HEAD_OF_HOUSEHOLD = 4;
+  FILING_STATUS_QUALIFYING_SURVIVING_SPOUSE = 5;
+}
+
+// How often the user makes estimated tax payments.
+// The value encodes the window length in months.
+enum TaxPaymentFrequency {
+  TAX_PAYMENT_FREQUENCY_UNSPECIFIED = 0;
+  TAX_PAYMENT_FREQUENCY_MONTHLY = 1;
+  TAX_PAYMENT_FREQUENCY_QUARTERLY = 3;
+  TAX_PAYMENT_FREQUENCY_FOUR_MONTHLY = 4;
+  TAX_PAYMENT_FREQUENCY_SEMI_ANNUAL = 6;
+  TAX_PAYMENT_FREQUENCY_ANNUAL = 12;
+}

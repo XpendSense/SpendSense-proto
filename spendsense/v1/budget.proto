@@ -70,6 +70,7 @@ message BudgetProfile {
   string user_id = 2;
   string name = 3;
   BudgetCycle cycle = 4;
+  string country_code = 5; // propagated from owner at creation
 }
 
 // One cycle window of a BudgetProfile. Auto-created by the cycling job;
@@ -101,7 +102,8 @@ message IncomeSource {
   Money default_amount = 5;
   bool recurring = 6;
   int64 budget_person_id = 7; // 0 = unattributed
-  RecurringType payment_frequency = 8; // how often the income is received (weekly, bi-weekly, monthly)
+  RecurringType payment_frequency = 8; // how often the income is received
+  bool before_tax = 9; // true = gross income, tax estimation applies
 }
 
 // Actual income amount for one period. Pre-filled from IncomeSource.default_amount;
@@ -122,6 +124,7 @@ message SavingsSource {
   string name = 3;
   Money amount = 4; // per-occurrence amount (e.g. $200 per paycheck)
   RecurringType frequency = 5; // how often this saving is made
+  bool is_tax_reserve = 6; // auto-managed by system; recalculated on each budget roll
   int64 budget_person_id = 7;
 }
 
@@ -280,6 +283,7 @@ message AddIncomeSourceRequest {
   bool recurring = 5;
   int64 budget_person_id = 6; // 0 = unattributed
   RecurringType payment_frequency = 7;
+  bool before_tax = 8;
 }
 
 message AddIncomeSourceResponse {
@@ -303,6 +307,7 @@ message UpdateIncomeSourceRequest {
   bool recurring = 6;
   int64 budget_person_id = 7;
   RecurringType payment_frequency = 8;
+  bool before_tax = 9;
 }
 
 message UpdateIncomeSourceResponse {
