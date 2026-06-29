@@ -23,6 +23,7 @@ service BudgetService {
   // People — profile-scoped; shared across all periods
   rpc AddBudgetPeople(AddBudgetPeopleRequest) returns (AddBudgetPeopleResponse);
   rpc ListBudgetPeople(ListBudgetPeopleRequest) returns (ListBudgetPeopleResponse);
+  rpc UpdateBudgetPerson(UpdateBudgetPersonRequest) returns (UpdateBudgetPersonResponse);
   rpc RemoveBudgetPerson(RemoveBudgetPersonRequest) returns (RemoveBudgetPersonResponse);
 
   // Income sources — profile-level templates
@@ -87,6 +88,7 @@ message BudgetPerson {
   string budget_profile_id = 2;
   string user_name = 3;
   string user_id = 4; // empty when person is not a registered user
+  string color = 5;
 }
 
 // Template for an income stream. Carries forward every period.
@@ -144,6 +146,7 @@ message Category {
   string name = 2;
   int32 type_id = 3;
   bool is_system = 4;
+  string color = 5;
 }
 
 message PaymentMethod {
@@ -151,6 +154,7 @@ message PaymentMethod {
   string name = 2;
   PaymentType type = 3;
   int64 budget_person_id = 4; // 0 = unattributed
+  string color = 5;
 }
 
 // ─── BudgetProfile CRUD ──────────────────────────────────────────────────────
@@ -227,6 +231,7 @@ message GetBudgetPeriodResponse {
 message NewBudgetPerson {
   string user_name = 1;
   string user_id = 2; // optional
+  string color = 3;
 }
 
 message AddBudgetPeopleRequest {
@@ -254,6 +259,16 @@ message RemoveBudgetPersonRequest {
 }
 
 message RemoveBudgetPersonResponse {}
+
+message UpdateBudgetPersonRequest {
+  int64 id = 1;
+  string budget_profile_id = 2;
+  string color = 3;
+}
+
+message UpdateBudgetPersonResponse {
+  BudgetPerson person = 1;
+}
 
 // ─── Income sources ──────────────────────────────────────────────────────────
 
@@ -428,6 +443,7 @@ message ListCategoriesResponse {
 
 message CreateCategoryRequest {
   string name = 1;
+  string color = 2;
 }
 
 message CreateCategoryResponse {
@@ -437,6 +453,7 @@ message CreateCategoryResponse {
 message UpdateCategoryRequest {
   int32 id = 1;
   string name = 2;
+  string color = 3;
 }
 
 message UpdateCategoryResponse {
@@ -465,6 +482,7 @@ message CreatePaymentMethodRequest {
   string name = 1;
   PaymentType type = 2;
   int64 budget_person_id = 3; // 0 = unattributed
+  string color = 4;
 }
 
 message CreatePaymentMethodResponse {
@@ -474,6 +492,7 @@ message CreatePaymentMethodResponse {
 message UpdatePaymentMethodRequest {
   string id = 1;
   string name = 2;
+  string color = 3;
 }
 
 message UpdatePaymentMethodResponse {
