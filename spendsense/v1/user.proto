@@ -28,6 +28,8 @@ message User {
   string state_code = 9; // US only, e.g. "CA" — empty for non-US users
   FilingStatus filing_status = 10;
   TaxPaymentFrequency tax_payment_frequency = 11;
+  string language = 12; // BCP 47 locale code, e.g. "en", "es"
+  string currency = 13; // ISO 4217 currency code, e.g. "USD", "ARS", "EUR"
 }
 
 message GetMeRequest {}
@@ -43,6 +45,8 @@ message UpdateMeRequest {
   string state_code = 4;
   FilingStatus filing_status = 5;
   TaxPaymentFrequency tax_payment_frequency = 6;
+  string language = 7; // BCP 47 locale code, e.g. "en", "es"
+  string currency = 8; // ISO 4217 currency code, e.g. "USD", "ARS", "EUR"
 }
 
 message UpdateMeResponse {

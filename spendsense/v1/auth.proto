@@ -20,6 +20,8 @@ message RegisterRequest {
   string last_name = 4;
   string country_code = 5; // ISO 3166-1 alpha-2, e.g. "US"
   string state_code = 6; // US only, e.g. "CA" — empty for non-US
+  string language = 7; // BCP 47 locale code, e.g. "en", "es" — defaults to "en"
+  string currency = 8; // ISO 4217 currency code, e.g. "USD" — defaults to "USD"
 }
 
 message RegisterResponse {
@@ -37,6 +39,8 @@ message LoginResponse {
   string access_token = 1;
   string token_type = 2; // "bearer"
   int64 expires_in = 3; // seconds
+  string language = 4; // user's stored locale preference
+  string currency = 5; // user's stored currency preference
 }
 
 message LogoutRequest {}
@@ -65,10 +69,14 @@ message ExchangeGoogleCodeRequest {
   string code = 1;
   string state = 2;
   string redirect_uri = 3;
+  string language = 4; // locale from localStorage at callback time — used for new users only
+  string currency = 5; // currency from localStorage at callback time — used for new users only
 }
 
 message ExchangeGoogleCodeResponse {
   string access_token = 1;
   int64 expires_in = 2;
   bool is_new_user = 3;
+  string language = 4; // user's stored locale (new user: from request; returning user: from profile)
+  string currency = 5; // user's stored currency (new user: from request; returning user: from profile)
 }
