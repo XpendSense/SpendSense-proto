@@ -33,6 +33,7 @@ message RegisterResponse {
 message LoginRequest {
   string email = 1;
   string password = 2;
+  bool remember_me = 3; // true → 90-day JWT; false (default) → 24-hour JWT
 }
 
 message LoginResponse {
