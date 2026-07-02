@@ -134,6 +134,7 @@ message SavingsSource {
   optional Money federal_amount = 8; // monthly federal tax component (tax reserve only)
   optional Money state_amount = 9; // monthly state tax component (tax reserve only)
   string payment_method_id = 10; // optional: payment method used for this saving
+  repeated int32 payment_days = 11; // day-of-month for each scheduled transfer; count encodes frequency (1=monthly, 2=bi-weekly, 4=weekly)
 }
 
 // A spend, saving, or fixed expense within a period.
@@ -362,12 +363,12 @@ message UpdateIncomeEntryResponse {
 // ─── Savings sources ─────────────────────────────────────────────────────────
 
 message AddSavingsSourceRequest {
+  reserved 4, 6; // removed: frequency (inferred from payment_days), budget_person_id (inferred from payment method)
   string budget_profile_id = 1;
   string name = 2;
   Money amount = 3;
-  RecurringType frequency = 4;
   string payment_method_id = 5;
-  int64 budget_person_id = 6;
+  repeated int32 payment_days = 7; // 1=monthly, 2=bi-weekly, 4=weekly
 }
 
 message AddSavingsSourceResponse {
@@ -383,13 +384,13 @@ message ListSavingsSourcesResponse {
 }
 
 message UpdateSavingsSourceRequest {
+  reserved 5, 7; // removed: frequency (inferred from payment_days), budget_person_id (inferred from payment method)
   int64 id = 1;
   string budget_profile_id = 2;
   string name = 3;
   Money amount = 4;
-  RecurringType frequency = 5;
   string payment_method_id = 6;
-  int64 budget_person_id = 7;
+  repeated int32 payment_days = 8; // 1=monthly, 2=bi-weekly, 4=weekly
 }
 
 message UpdateSavingsSourceResponse {
