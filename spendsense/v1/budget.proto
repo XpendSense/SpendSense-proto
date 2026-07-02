@@ -133,6 +133,7 @@ message SavingsSource {
   int64 budget_person_id = 7;
   optional Money federal_amount = 8; // monthly federal tax component (tax reserve only)
   optional Money state_amount = 9; // monthly state tax component (tax reserve only)
+  string payment_method_id = 10; // optional: payment method used for this saving
 }
 
 // A spend, saving, or fixed expense within a period.
@@ -365,6 +366,7 @@ message AddSavingsSourceRequest {
   string name = 2;
   Money amount = 3;
   RecurringType frequency = 4;
+  string payment_method_id = 5;
   int64 budget_person_id = 6;
 }
 
@@ -386,6 +388,7 @@ message UpdateSavingsSourceRequest {
   string name = 3;
   Money amount = 4;
   RecurringType frequency = 5;
+  string payment_method_id = 6;
   int64 budget_person_id = 7;
 }
 
