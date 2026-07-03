@@ -47,6 +47,7 @@ service BudgetService {
   rpc CreateTransaction(CreateTransactionRequest) returns (CreateTransactionResponse);
   rpc UpdateTransaction(UpdateTransactionRequest) returns (UpdateTransactionResponse);
   rpc DeleteTransaction(DeleteTransactionRequest) returns (DeleteTransactionResponse);
+  rpc MarkTransactionAsPaid(MarkTransactionAsPaidRequest) returns (MarkTransactionAsPaidResponse);
 
   // Categories — user-scoped, unchanged
   rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
@@ -141,7 +142,7 @@ message SavingsSource {
 message Transaction {
   string id = 1;
   string name = 2;
-  Money amount = 3;
+  Money amount = 3;          // actual paid amount (set when is_paid = true); equals planned_amount otherwise
   Money planned_amount = 4;
   google.protobuf.Timestamp date = 5;
   google.protobuf.Timestamp renewal_date = 6; // when a recurring fixed tx expires
@@ -151,6 +152,8 @@ message Transaction {
   string payment_method_id = 10;
   int32 transaction_frequency_id = 11;
   int32 transaction_type_id = 12;
+  bool is_paid = 13;
+  google.protobuf.Timestamp paid_at = 14;
 }
 
 message Category {
@@ -457,6 +460,17 @@ message DeleteTransactionRequest {
 }
 
 message DeleteTransactionResponse {}
+
+message MarkTransactionAsPaidRequest {
+  string id = 1;
+  string budget_period_id = 2;
+  Money paid_amount = 3;
+  google.protobuf.Timestamp paid_at = 4;
+}
+
+message MarkTransactionAsPaidResponse {
+  Transaction transaction = 1;
+}
 
 // ─── Categories ──────────────────────────────────────────────────────────────
 
