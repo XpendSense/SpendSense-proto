@@ -256,6 +256,16 @@ message FixedExpense {
   // on a bank feed, so these are excluded from Plaid review auto-matching —
   // any transaction scoring against one is a false positive by construction.
   bool is_installment_plan = 17;
+  // How many payments have come due as of now, clamped to [0, total_payments];
+  // 0 when total_payments is unset. Computed, not persisted — same as
+  // next_due_date, and for the same reason: it depends on today's date.
+  //
+  // Server-side because the client cannot derive it correctly. The schedule is
+  // anchored on anchor_date, which is nullable (migration 000025) and falls
+  // back to fixed_expense.created_at — a column deliberately absent from this
+  // message. Both clients were inventing a substitute anchor and disagreeing:
+  // web reported 1/N for an unstarted plan where iOS reported 0/N.
+  int32 payments_made = 18;
 }
 
 message Category {
@@ -973,4 +983,23 @@ message GetExpenseSummaryResponse {
   // Per-category breakdowns
   repeated CategoryExpenseSummary plan_categories = 12; // categories with a plan; sorted by planned_total descending
   repeated CategoryExpenseSummary overview_categories = 13; // categories with a plan OR actual spend; sorted by actual_total descending
+
+  // total_actual split by transaction type, under the identical filter, so
+  // fixed_actual_total + variable_actual_total == total_actual always. The
+  // Transactions tab shows these beside a grand total the same response
+  // supplies; re-deriving either half client-side would put two spellings of
+  // one number next to each other on screen.
+  Money fixed_actual_total = 14; // paid Fixed transactions only — an unpaid one is not yet spend
+  Money variable_actual_total = 15;
+
+  // Variable transactions that pushed their category past its combined plan,
+  // for the Transactions tab's "Exceeded only" filter. Walked chronologically
+  // per category: only transactions from the point the running total first
+  // crosses the plan onward, not every transaction in an over-budget category.
+  //
+  // The baseline is each category's planned_total, already computed above, so
+  // the alternative was clients re-deriving a number this response already
+  // carries. It also settles which transactions are "exceeded" — a business
+  // rule the two clients have disagreed about before (issue #48).
+  repeated string over_budget_transaction_ids = 16;
 }
