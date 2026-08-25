@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package wellspent.v1;
+
+import "google/protobuf/timestamp.proto";
+import "wellspent/v1/common.proto";
+
+option go_package = "github.com/BeWellSpent/wellspent-backend/gen/wellspent/v1;wellspentv1";
+
+// A per-release record of what changed, kept per shipping component (web, iOS,
+// server) and shown to a reader the first time they open a version.
+//
+// Separate from StatusService even though both are operator-authored: a status
+// banner is transient, global and unauthenticated, while a changelog is
+// permanent history a signed-in reader browses on purpose.
+service ChangelogService {
+  // Authenticated, but not superuser-gated — this is the reader-facing call,
+  // used both by the "what's new" prompt and by the Help browser.
+  rpc ListChangelog(ListChangelogRequest) returns (ListChangelogResponse);
+
+  // Superuser only. There is no admin UI: releases are published by running
+  // WellSpent-backend/scripts/changelog.sh against a JSON file authored in the
+  // repo alongside the code, at the moment the version actually ships.
+  rpc CreateChangelogRelease(CreateChangelogReleaseRequest) returns (CreateChangelogReleaseResponse);
+}
+
+// One line of a release's notes.
+message ChangelogItem {
+  ChangeType change_type = 1;
+
+  // Both languages travel on the row, the same way StatusBanner carries its
+  // message: an operator writing release notes knows what they mean, and
+  // translating at read time would put machine output in front of the reader.
+  // Clients pick by locale and fall back to English when the Spanish is empty.
+  string summary_en = 2;
+  string summary_es = 3;
+}
+
+message ChangelogRelease {
+  string id = 1;
+  ChangelogComponent component = 2;
+
+  // The version string as that component spells it — web and server use
+  // semver, iOS uses its MARKETING_VERSION. Deliberately not iOS's build
+  // number: a changelog entry describes a release a reader was given, and the
+  // build number moves on every feature while the marketing version does not.
+  string version = 3;
+
+  // When this version reached users, which is not when the row was written —
+  // notes are authored with the code and published when the build ships.
+  google.protobuf.Timestamp released_at = 4;
+
+  // In the order the operator wrote them; grouping by change_type is left to
+  // the clients, since that is presentation.
+  repeated ChangelogItem items = 5;
+
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message ListChangelogRequest {
+  // Which components to return. Empty means all of them — what the Help
+  // browser asks for. The "what's new" prompt asks for the caller's own
+  // client plus SERVER.
+  repeated ChangelogComponent components = 1;
+
+  // Max releases per component, newest first. Defaults to 20.
+  int32 limit_per_component = 2;
+}
+
+message ListChangelogResponse {
+  // Newest first within each component.
+  repeated ChangelogRelease releases = 1;
+
+  // The version this server is currently running. A client cannot otherwise
+  // tell which server releases are new to it — it knows its own version, but
+  // has no way to know how far the backend has moved since it last looked.
+  string current_server_version = 2;
+}
+
+message CreateChangelogReleaseRequest {
+  ChangelogComponent component = 1;
+  string version = 2;
+  // Optional — defaults to now, since publishing normally happens at release.
+  google.protobuf.Timestamp released_at = 3;
+  // At least one required. A release with nothing to say should not be
+  // published: it would show a reader an empty "what's new".
+  repeated ChangelogItem items = 4;
+}
+
+message CreateChangelogReleaseResponse {
+  ChangelogRelease release = 1;
+}

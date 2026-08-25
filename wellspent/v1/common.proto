@@ -126,6 +126,29 @@ enum StatusBannerSeverity {
   STATUS_BANNER_SEVERITY_CRITICAL = 3; // red — something is badly broken
 }
 
+// Which application a changelog release describes. One changelog per shipping
+// artifact, so a reader sees what changed in the thing they are actually
+// running plus what changed behind it.
+//
+// Background jobs are deliberately absent: cycle-budgets and plaid-sync ship
+// inside the server image and have no separately visible version.
+enum ChangelogComponent {
+  CHANGELOG_COMPONENT_UNSPECIFIED = 0;
+  CHANGELOG_COMPONENT_WEB = 1;
+  CHANGELOG_COMPONENT_IOS = 2;
+  CHANGELOG_COMPONENT_SERVER = 3;
+}
+
+// What a single changelog item did. Keep the set small — three buckets a
+// reader can tell apart at a glance beats a taxonomy nobody applies
+// consistently.
+enum ChangeType {
+  CHANGE_TYPE_UNSPECIFIED = 0;
+  CHANGE_TYPE_ADDED = 1; // something new you can do
+  CHANGE_TYPE_FIXED = 2; // something that was broken now works
+  CHANGE_TYPE_CHANGED = 3; // something behaves differently than it used to
+}
+
 // Identifies one of the app's seeded system categories (is_system = TRUE,
 // user_id IS NULL). User-created categories always carry UNSPECIFIED.
 //
