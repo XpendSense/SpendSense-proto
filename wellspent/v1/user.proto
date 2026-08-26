@@ -13,8 +13,12 @@ service UserService {
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
   rpc ChangeEmail(ChangeEmailRequest) returns (ChangeEmailResponse);
   rpc DeleteMe(DeleteMeRequest) returns (DeleteMeResponse);
-  // Public — no auth required (used during registration).
-  rpc ListCountries(ListCountriesRequest) returns (ListCountriesResponse);
+
+  // ListCountries was retired on 2026-08-26 and now lives on the REST
+  // transport as `GET /rest/v1/countries` — see openapi/v1/wellspent.yaml.
+  // Global, identical for every caller, changes roughly never: exactly the
+  // shape a browser and a CDN should be allowed to cache, which Connect's
+  // unary-POST framing makes impossible.
 }
 
 message User {
@@ -84,23 +88,3 @@ message ChangeEmailResponse {
 message DeleteMeRequest {}
 
 message DeleteMeResponse {}
-
-// ─── Countries ───────────────────────────────────────────────────────────────
-
-message CountryFeature {
-  string name = 1;
-  bool is_enabled = 2;
-}
-
-message Country {
-  string code = 1; // ISO 3166-1 alpha-2
-  string name = 2;
-  bool is_enabled = 3;
-  repeated CountryFeature features = 4;
-}
-
-message ListCountriesRequest {}
-
-message ListCountriesResponse {
-  repeated Country countries = 1;
-}

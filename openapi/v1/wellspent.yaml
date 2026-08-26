@@ -1,0 +1,408 @@
+openapi: 3.0.3
+
+info:
+  title: WellSpent Public REST API
+  version: 1.0.0
+  license:
+    name: Proprietary
+    url: https://bewellspent.com
+  description: |
+    The parts of the WellSpent API that return the **same response for every
+    caller** and change rarely.
+
+    Everything else — all personalized reads and every mutation — stays on
+    ConnectRPC (`buf.build/bewellspent/wellspent`). Transport follows data
+    shape: a response that is identical for everyone should be cacheable by
+    the browser and by a CDN, and Connect's unary-POST framing makes that
+    impossible. A response scoped to one user gains nothing from HTTP caching
+    and everything from a shared typed schema.
+
+    Read `openapi/README.md` in this repo before adding an endpoint here.
+
+servers:
+  - url: https://api.bewellspent.com
+    description: Production
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: meta
+    description: Infrastructure probes.
+  - name: reference
+    description: Global reference data.
+  - name: status
+    description: Operator-authored service status.
+  - name: changelog
+    description: Release notes.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: The same JWT issued by `AuthService/Login`. Identical verification to the Connect interceptor.
+
+  parameters:
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Return `304 Not Modified` when the entity tag still matches.
+      schema:
+        type: string
+
+  headers:
+    ETag:
+      description: Entity tag for conditional requests.
+      schema:
+        type: string
+    CacheControl:
+      description: Caching policy for this response.
+      schema:
+        type: string
+
+  responses:
+    NotModified:
+      description: The cached copy is still current.
+      headers:
+        ETag:
+          $ref: '#/components/headers/ETag'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+    RateLimited:
+      description: |
+        Too many requests from this IP. The rate limiter wraps every route on
+        the mux, REST and Connect alike, so any endpoint here can return this.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Stable, machine-readable reason.
+          example: unauthenticated
+        message:
+          type: string
+          description: Human-readable detail. Not for display to end users.
+      description: |
+        Mirrors the shape `internal/handler/errors.go` produces for Connect, so
+        both transports fail the same way.
+
+    CountryFeature:
+      type: object
+      required: [name, isEnabled]
+      properties:
+        name:
+          type: string
+          example: before_tax_income
+        isEnabled:
+          type: boolean
+
+    Country:
+      type: object
+      required: [code, name, isEnabled, features]
+      properties:
+        code:
+          type: string
+          description: ISO 3166-1 alpha-2.
+          example: US
+        name:
+          type: string
+          example: United States
+        isEnabled:
+          type: boolean
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/CountryFeature'
+
+    CountriesResponse:
+      type: object
+      required: [countries]
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+
+    StatusBannerSeverity:
+      type: string
+      enum: [info, warning, critical]
+      description: |
+        Ordered: when more than one banner is live, the highest severity wins,
+        then the most recently created. `info` and `warning` are dismissable
+        per device; `critical` is not.
+
+    StatusBanner:
+      type: object
+      required: [id, severity, messageEn, messageEs, startsAt, endsAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        severity:
+          $ref: '#/components/schemas/StatusBannerSeverity'
+        messageEn:
+          type: string
+          maxLength: 300
+        messageEs:
+          type: string
+          maxLength: 300
+          description: Empty means clients fall back to the English text.
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    StatusBannerResponse:
+      type: object
+      properties:
+        banner:
+          $ref: '#/components/schemas/StatusBanner'
+      description: |
+        `banner` is absent when nothing is live. Deliberately a successful
+        empty response rather than a 404 — every client calls this on every
+        load and the quiet case is overwhelmingly the common one.
+
+    ChangelogComponent:
+      type: string
+      enum: [web, ios, server]
+      description: One per shipping artifact. Background jobs ship inside the server image and have no separately visible version.
+
+    ChangeType:
+      type: string
+      enum: [added, fixed, changed]
+
+    ChangelogItem:
+      type: object
+      required: [changeType, summaryEn, summaryEs]
+      properties:
+        changeType:
+          $ref: '#/components/schemas/ChangeType'
+        summaryEn:
+          type: string
+          maxLength: 300
+        summaryEs:
+          type: string
+          maxLength: 300
+          description: Empty means clients fall back to the English text.
+
+    ChangelogRelease:
+      type: object
+      required: [id, component, version, releasedAt, items, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        component:
+          $ref: '#/components/schemas/ChangelogComponent'
+        version:
+          type: string
+          description: As that component spells it — semver for web and server, `MARKETING_VERSION` for iOS.
+          example: 1.30.0
+        releasedAt:
+          type: string
+          format: date-time
+          description: When the version reached users, which is not when the row was written.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogItem'
+          description: In the order the operator wrote them. Grouping by changeType is left to clients.
+        createdAt:
+          type: string
+          format: date-time
+
+    ChangelogResponse:
+      type: object
+      required: [releases, currentServerVersion]
+      properties:
+        releases:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogRelease'
+          description: Newest first within each component.
+        currentServerVersion:
+          type: string
+          description: |
+            What this server build calls itself. A client knows its own version
+            but cannot otherwise tell how far the backend has moved since it
+            last looked.
+          example: 1.1.0
+
+    PingResponse:
+      type: object
+      required: [status, serverVersion]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        serverVersion:
+          type: string
+
+paths:
+  /rest/v1/ping:
+    get:
+      operationId: getPing
+      security: []
+      tags: [meta]
+      summary: Liveness probe for the REST transport.
+      description: |
+        Exists to prove the REST pipeline end to end — spec, codegen on all
+        three clients, routing, CORS, h2c and rate limiting — independently of
+        any real endpoint. Public and uncached.
+      responses:
+        '200':
+          description: The REST transport is serving.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /rest/v1/countries:
+    get:
+      operationId: listCountries
+      security: []
+      tags: [reference]
+      summary: Every enabled country with its feature flags.
+      description: |
+        Public. The canonical example of what belongs on this transport: three
+        rows that change roughly never, fetched by the registration form and
+        the profile editor, identical for every caller on earth.
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: The country list.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountriesResponse'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /rest/v1/status/banner:
+    get:
+      operationId: getActiveStatusBanner
+      security: []
+      tags: [status]
+      summary: The status banner currently in effect, if any.
+      description: |
+        Public, and that is the point — a signed-out visitor looking at a
+        broken login screen is one of the people who most needs to read it.
+        At most one banner is ever returned.
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: The active banner, or an empty object when none is live.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusBannerResponse'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /rest/v1/changelog:
+    get:
+      operationId: listChangelog
+      tags: [changelog]
+      summary: Published release notes.
+      description: |
+        Authenticated but not superuser-gated — this is the reader-facing call
+        behind the "what's new" prompt and the Help browser. The response is
+        the same for every authenticated caller, so it is cacheable, but only
+        privately: a shared cache would need `Vary: Authorization`, which
+        defeats the purpose.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: component
+          in: query
+          required: false
+          description: Repeat to request several. Omit for every component.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ChangelogComponent'
+          style: form
+          explode: true
+        - name: limitPerComponent
+          in: query
+          required: false
+          description: Newest first. Defaults to 20.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: Matching releases plus the running server version.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogResponse'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'

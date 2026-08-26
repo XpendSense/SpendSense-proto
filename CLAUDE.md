@@ -6,11 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repo is the single source of truth for the WellSpent API contract. All proto files live under `wellspent/v1/`. Changes pushed to `main` are automatically published to the Buf Schema Registry at `buf.build/bewellspent/wellspent` via CI, which the backend consumes via `make generate`.
 
+There is a **second, parallel contract** in `openapi/v1/` covering a small set of
+endpoints served as plain cacheable HTTP instead of Connect. It is not a
+replacement and not a migration path — read `openapi/README.md` before adding
+anything to it, especially the two-part test for what qualifies.
+
 ## Commands
 
 ```bash
-buf lint          # lint all proto files
+make lint         # everything CI runs: buf lint + format check + OpenAPI lint
+make format       # auto-fix proto formatting in place
+
+buf lint          # proto only
 buf breaking --against .git#branch=main   # check for breaking changes vs main
+npx --yes @redocly/cli@1.34.1 lint        # OpenAPI only
 ```
 
 ## Proto files
@@ -22,6 +31,28 @@ buf breaking --against .git#branch=main   # check for breaking changes vs main
 | `user.proto` | `UserService` — GetMe, UpdateMe, ChangePassword, DeleteMe |
 | `budget.proto` | `BudgetService` — budget CRUD, people, income entries, transactions, categories, payment methods |
 | `invite.proto` | `InviteService` — SendBudgetInvite, ListBudgetInvites, CancelBudgetInvite, GetBudgetInvite, AcceptBudgetInvite |
+
+## OpenAPI contracts (`openapi/v1/`)
+
+An endpoint belongs here only if it is **both** global (identical response for
+every caller) **and** rarely-changing. Everything else — every personalized read
+and every mutation without exception — stays on Connect. `openapi/README.md`
+carries the full rule, the current endpoint list, and the candidates that were
+considered and rejected.
+
+Three things that are easy to get wrong:
+
+- **It is OpenAPI 3.0.3, not 3.1**, because `oapi-codegen`'s kin-openapi base has
+  incomplete 3.1 support while the web and iOS generators handle both.
+- **It does not go through BSR.** There is no OpenAPI equivalent. This repo is
+  public, so consumers fetch the raw file over HTTPS at codegen time.
+- **It is hand-authored**, reviewed in PRs like the `.proto` files — never
+  generated from Go handler annotations.
+
+Retiring a Connect RPC in favour of a REST endpoint means deleting the RPC *and*
+its request/response messages, leaving a comment on the service explaining where
+it went. Shared messages (`StatusBanner`, `ChangelogRelease`) stay if other RPCs
+still use them.
 
 ## Adding an RPC
 
