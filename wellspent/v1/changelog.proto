@@ -14,10 +14,12 @@ option go_package = "github.com/BeWellSpent/wellspent-backend/gen/wellspent/v1;w
 // banner is transient, global and unauthenticated, while a changelog is
 // permanent history a signed-in reader browses on purpose.
 service ChangelogService {
-  // Authenticated, but not superuser-gated — this is the reader-facing call,
-  // used both by the "what's new" prompt and by the Help browser.
-  rpc ListChangelog(ListChangelogRequest) returns (ListChangelogResponse);
-
+  // The reader-facing list was retired on 2026-08-26 and is now
+  // `GET /rest/v1/changelog` — see openapi/v1/wellspent.yaml. It is
+  // authenticated but returns the same bytes to every caller, so it caches
+  // privately in the browser even though a shared cache would need
+  // `Vary: Authorization` and gain nothing.
+  //
   // Superuser only. There is no admin UI: releases are published by running
   // WellSpent-backend/scripts/changelog.sh against a JSON file authored in the
   // repo alongside the code, at the moment the version actually ships.
@@ -55,26 +57,6 @@ message ChangelogRelease {
   repeated ChangelogItem items = 5;
 
   google.protobuf.Timestamp created_at = 6;
-}
-
-message ListChangelogRequest {
-  // Which components to return. Empty means all of them — what the Help
-  // browser asks for. The "what's new" prompt asks for the caller's own
-  // client plus SERVER.
-  repeated ChangelogComponent components = 1;
-
-  // Max releases per component, newest first. Defaults to 20.
-  int32 limit_per_component = 2;
-}
-
-message ListChangelogResponse {
-  // Newest first within each component.
-  repeated ChangelogRelease releases = 1;
-
-  // The version this server is currently running. A client cannot otherwise
-  // tell which server releases are new to it — it knows its own version, but
-  // has no way to know how far the backend has moved since it last looked.
-  string current_server_version = 2;
 }
 
 message CreateChangelogReleaseRequest {

@@ -1,0 +1,13 @@
+# Lint config for the OpenAPI contract. Run via `make lint` and in CI, the same
+# way `buf lint` covers the .proto files next to it.
+extends:
+  - recommended
+
+rules:
+  # The localhost entry in `servers` is deliberate — it is how both clients
+  # point their generated code at a local backend during development.
+  no-server-example.com: off
+
+apis:
+  wellspent@v1:
+    root: openapi/v1/wellspent.yaml

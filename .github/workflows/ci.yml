@@ -19,6 +19,11 @@ jobs:
           breaking: false
           push: false
 
+      # The OpenAPI contract for the cacheable REST endpoints is reviewed and
+      # linted exactly like the .proto files beside it. See openapi/README.md.
+      - name: Lint OpenAPI contract
+        run: npx --yes @redocly/cli@1.34.1 lint
+
   publish:
     name: Push to Buf Schema Registry
     runs-on: ubuntu-latest

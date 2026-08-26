@@ -14,11 +14,12 @@ option go_package = "github.com/BeWellSpent/wellspent-backend/gen/wellspent/v1;w
 // to one user about their own budget and is read once, whereas a banner is
 // global, unauthenticated, and true for everyone until it expires.
 service StatusService {
-  // Public — no auth. A signed-out visitor staring at a broken login screen is
-  // one of the people who most needs to see this, so it must not require a
-  // token.
-  rpc GetActiveStatusBanner(GetActiveStatusBannerRequest) returns (GetActiveStatusBannerResponse);
-
+  // The read side was retired on 2026-08-26: fetching the active banner is now
+  // `GET /rest/v1/status/banner` on the REST transport — see
+  // openapi/v1/wellspent.yaml. It is the single most cache-worthy response in
+  // the system (unauthenticated, identical for everyone, requested by every
+  // client on every load), and it was the one Connect could not let a CDN hold.
+  //
   // The three below are superuser-only. There is no admin UI: these are called
   // directly (curl/grpcurl) during an incident.
   rpc CreateStatusBanner(CreateStatusBannerRequest) returns (CreateStatusBannerResponse);
@@ -50,16 +51,6 @@ message StatusBanner {
   google.protobuf.Timestamp ends_at = 6;
 
   google.protobuf.Timestamp created_at = 7;
-}
-
-message GetActiveStatusBannerRequest {}
-
-message GetActiveStatusBannerResponse {
-  // Unset when nothing is live. At most one banner is ever returned — the
-  // highest severity currently active, then the most recently created. The top
-  // of the screen is one strip; stacking banners would push the app itself off
-  // a phone screen.
-  StatusBanner banner = 1;
 }
 
 message CreateStatusBannerRequest {
