@@ -30,6 +30,7 @@ message RegisterRequest {
   string state_code = 6; // US only, e.g. "CA" — empty for non-US
   string language = 7; // BCP 47 locale code, e.g. "en", "es" — defaults to "en"
   string currency = 8; // ISO 4217 currency code, e.g. "USD" — defaults to "USD"
+  string captcha_token = 9; // Cloudflare Turnstile response token from the widget on the web registration form
 }
 
 message RegisterResponse {
